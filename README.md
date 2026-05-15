@@ -22,12 +22,20 @@ The harness ships with these built-in tools — no extra code to enable:
 
 - **Planning** — `write_todos` for task breakdown and progress tracking
 - **Filesystem** — `read_file`, `write_file`, `edit_file`, `ls`, `glob`, `grep`
-- **Shell** — `execute` for running commands inside the container sandbox
+  (backed by LangGraph state — virtual files, not the real container FS)
+- **Shell** — `execute` for running commands. The tool is *registered* by
+  default but only works when the backend implements
+  `SandboxBackendProtocol`. The default `StateBackend` does **not**, so this
+  sample ships [`InContainerSandboxBackend`](graph.py) — a `StateBackend`
+  subclass that runs commands in the Foundry container via `subprocess.run`,
+  gated by a small allow-list (`ls`, `cat`, `pwd`, `env`, `python`, `pip`,
+  `grep`, `find`, …). Anything outside the list is refused with exit 126.
 - **Sub-agents** — `task` for delegating with isolated context windows
 - **Smart prompts** — system prompts that teach the model how to use the above
 - **Context management** — auto-summarization, large outputs spilled to files
 
-You can pass your own `tools=[...]` and `system_prompt=...` on top.
+You can pass your own `tools=[...]`, `backend=...`, and `system_prompt=...`
+on top.
 
 ## The diff vs upstream
 
