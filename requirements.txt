@@ -1,0 +1,12 @@
+# Foundry hosted-agent SDK (BaseAgent adapter + Responses protocol server).
+azure-ai-agentserver-agentframework==1.0.0b16
+agent-framework==1.0.0rc3
+
+# Deep Agents — batteries-included LangGraph harness from LangChain.
+# https://github.com/langchain-ai/deepagents
+deepagents>=0.6.1,<1.0
+langchain-openai>=1.0.0,<2.0
+
+# Foundry / Azure auth + env loading.
+azure-identity>=1.25.1
+python-dotenv
