@@ -10,3 +10,4 @@ langchain-openai>=1.0.0,<2.0
 # Foundry / Azure auth + env loading.
 azure-identity>=1.25.1
 python-dotenv
+./_vendor/azure-ai-agentserver-optimization

@@ -6,6 +6,7 @@ ENV PIP_NO_CACHE_DIR=1 \
 
 WORKDIR /app
 
+COPY _vendor/ ./_vendor/
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
