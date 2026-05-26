@@ -1,0 +1,16 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "internet_search",
+      "description": "Search the web for current information on a topic. Returns top results with summaries.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {"type": "string", "description": "The search query string"}
+        },
+        "required": ["query"]
+      }
+    }
+  }
+]

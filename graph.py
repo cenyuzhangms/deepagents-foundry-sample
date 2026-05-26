@@ -31,6 +31,7 @@ import shlex
 import subprocess
 import uuid
 
+from azure.ai.agentserver.optimization import load_config
 from azure.identity import DefaultAzureCredential, get_bearer_token_provider
 from deepagents import create_deep_agent
 from deepagents.backends import StateBackend
@@ -51,7 +52,7 @@ def _derive_openai_endpoint() -> str:
     return f"{m.group(1)}{m.group(2)}.openai.azure.com"
 
 
-def _get_model() -> AzureChatOpenAI:
+def _get_model(model_deployment_name: str | None = None) -> AzureChatOpenAI:
     """Replacement for the README's ``init_chat_model("openai:gpt-4o")`` line.
 
     Uses the Foundry container's managed identity instead of an API key.
@@ -61,10 +62,20 @@ def _get_model() -> AzureChatOpenAI:
     )
     return AzureChatOpenAI(
         azure_endpoint=_derive_openai_endpoint(),
-        azure_deployment=os.getenv("MODEL_DEPLOYMENT_NAME", "gpt-5.4"),
+        azure_deployment=model_deployment_name or os.getenv("MODEL_DEPLOYMENT_NAME", "gpt-5.4"),
         api_version=os.getenv("AZURE_OPENAI_API_VERSION", "2025-04-01-preview"),
         azure_ad_token_provider=token_provider,
     )
+
+
+SYSTEM_PROMPT = (
+    "You are a careful research assistant. Use write_todos to plan, "
+    "the virtual filesystem (write_file/read_file/edit_file) to take "
+    "notes, internet_search to gather facts, and the execute tool for "
+    "read-only shell inspection (ls, cat, env, python --version, etc.). "
+    "Never assume execute can run destructive commands; the sandbox "
+    "rejects anything outside an allow-list. Cite sources inline."
+)
 
 
 # ---------- example custom tool (deepagents already provides planning,
@@ -156,16 +167,18 @@ class InContainerSandboxBackend(StateBackend, SandboxBackendProtocol):
 @lru_cache(maxsize=1)
 def build_app():
     """Build the deepagents harness once per container."""
+    config = load_config()
+
+    # Apply optimized tool descriptions
+    tools = [internet_search]
+    config.apply_tool_descriptions(tools)
+
+    # Use compose_instructions to include skill catalog if optimization provided skills
+    instructions = config.compose_instructions() if config.has_skills else (config.instructions or SYSTEM_PROMPT)
+
     return create_deep_agent(
-        model=_get_model(),
-        tools=[internet_search],
+        model=_get_model(config.model),
+        tools=tools,
         backend=InContainerSandboxBackend(),
-        system_prompt=(
-            "You are a careful research assistant. Use write_todos to plan, "
-            "the virtual filesystem (write_file/read_file/edit_file) to take "
-            "notes, internet_search to gather facts, and the execute tool for "
-            "read-only shell inspection (ls, cat, env, python --version, etc.). "
-            "Never assume execute can run destructive commands; the sandbox "
-            "rejects anything outside an allow-list. Cite sources inline."
-        ),
+        system_prompt=instructions,
     )

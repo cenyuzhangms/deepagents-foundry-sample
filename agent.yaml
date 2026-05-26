@@ -18,3 +18,11 @@ environment_variables:
     value: ${AZURE_AI_MODEL_DEPLOYMENT_NAME}
   - name: AZURE_OPENAI_API_VERSION
     value: "2025-04-01-preview"
+  - name: OPTIMIZATION_LOCAL_DIR
+    value: .agent_configs
+  - name: OPTIMIZATION_CONFIG
+    value: ${OPTIMIZATION_CONFIG}
+  - name: OPTIMIZATION_CANDIDATE_ID
+    value: ${OPTIMIZATION_CANDIDATE_ID}
+  - name: OPTIMIZATION_RESOLVE_ENDPOINT
+    value: ${OPTIMIZATION_RESOLVE_ENDPOINT}
